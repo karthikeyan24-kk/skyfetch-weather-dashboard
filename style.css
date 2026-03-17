@@ -16,7 +16,7 @@ body {
 
 .dashboard {
     width: 100%;
-    max-width: 400px;
+    max-width: 800px;
     padding: 20px;
 }
 
@@ -42,6 +42,7 @@ body {
     text-align: center;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
+    width: 100%;
 }
 
 .weather-card:hover {
@@ -159,4 +160,55 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+/* Forecast Styles */
+.forecast-container {
+    margin-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    width: 100%;
+}
+
+.forecast-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.forecast-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.forecast-day {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.forecast-icon {
+    width: 60px;
+    height: 60px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.forecast-temp {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 5px 0;
+}
+
+.forecast-desc {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-transform: capitalize;
 }
