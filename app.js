@@ -10,6 +10,11 @@ function WeatherApp(apiKey) {
     this.weatherDisplay = document.getElementById('weather-info');
     this.forecastContainer = document.getElementById('forecast-container');
     
+    // Recent Searches references
+    this.recentContainer = document.getElementById('recent-container');
+    this.clearHistoryBtn = document.getElementById('clear-history-btn');
+    this.recentSearches = [];
+    
     this.init();
 }
 
@@ -22,8 +27,12 @@ WeatherApp.prototype.init = function() {
             this.handleSearch();
         }
     });
+
+    this.clearHistoryBtn.addEventListener('click', this.clearHistory.bind(this));
     
-    this.showWelcome();
+    this.loadRecentSearches();
+    this.displayRecentSearches();
+    this.loadLastCity();
 };
 
 // Show Welcome message
@@ -73,9 +82,12 @@ WeatherApp.prototype.getWeather = async function(city) {
         
         this.displayWeather(currentRes.data);
         
-        // Filter out everything to just get 1 update per day from the 40 limit array
         const dailyData = this.processForecastData(forecastRes.data.list);
         this.displayForecast(dailyData);
+        
+        // Save the successful search to localStorage
+        this.saveRecentSearch(currentRes.data.name);
+        localStorage.setItem('lastCity', currentRes.data.name);
         
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -117,8 +129,6 @@ WeatherApp.prototype.displayWeather = function(data) {
 
 // Process Data to only get exactly daily entries (one per day noonish)
 WeatherApp.prototype.processForecastData = function(list) {
-    // OpenWeather API returns every 3 hours. We will snag entries around noon (or simply standard index stepping)
-    // The safest filter takes just the ones timestamped at exactly 12:00:00 every day
     return list.filter(item => item.dt_txt.includes('12:00:00'));
 };
 
@@ -168,6 +178,73 @@ WeatherApp.prototype.showError = function(message) {
     `;
     this.weatherDisplay.innerHTML = errorHTML;
     this.forecastContainer.classList.add('hidden');
+};
+
+// Local Storage Functionality
+WeatherApp.prototype.loadRecentSearches = function() {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) {
+        this.recentSearches = JSON.parse(stored);
+    } else {
+        this.recentSearches = [];
+    }
+};
+
+WeatherApp.prototype.saveRecentSearch = function(city) {
+    // Format to Title Case
+    const formattedCity = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+    
+    // Remove if exists to prevent duplicates
+    this.recentSearches = this.recentSearches.filter(c => c.toLowerCase() !== city.toLowerCase());
+    
+    // Add to front
+    this.recentSearches.unshift(formattedCity);
+    
+    // Keep max 5 searches
+    if (this.recentSearches.length > 5) {
+        this.recentSearches.pop();
+    }
+    
+    localStorage.setItem('recentSearches', JSON.stringify(this.recentSearches));
+    this.displayRecentSearches();
+};
+
+WeatherApp.prototype.displayRecentSearches = function() {
+    this.recentContainer.innerHTML = '';
+    
+    if (this.recentSearches.length > 0) {
+        this.clearHistoryBtn.classList.remove('hidden');
+        
+        this.recentSearches.forEach(city => {
+            const btn = document.createElement('button');
+            btn.className = 'recent-btn';
+            btn.textContent = city;
+            
+            btn.addEventListener('click', () => {
+                this.getWeather(city);
+            });
+            
+            this.recentContainer.appendChild(btn);
+        });
+    } else {
+        this.clearHistoryBtn.classList.add('hidden');
+    }
+};
+
+WeatherApp.prototype.loadLastCity = function() {
+    const lastCity = localStorage.getItem('lastCity');
+    if (lastCity) {
+        this.getWeather(lastCity);
+    } else {
+        this.showWelcome();
+    }
+};
+
+WeatherApp.prototype.clearHistory = function() {
+    localStorage.removeItem('recentSearches');
+    localStorage.removeItem('lastCity');
+    this.recentSearches = [];
+    this.displayRecentSearches();
 };
 
 
